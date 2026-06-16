@@ -268,10 +268,11 @@
   .panel p{ font-size:0.72rem; color:var(--muted); line-height:1.75; margin-bottom:16px; max-width:340px; }
   .panel p strong{ color:var(--text); font-weight:400; }
   .bio-portrait{
-    width:100%; aspect-ratio:3/2; margin-bottom:24px;
-    overflow:hidden;
+    width:100%; position:relative; padding-bottom:66.6667%; margin-bottom:24px;
+    overflow:hidden; flex-shrink:0;
   }
   .bio-portrait img{
+    position:absolute; inset:0;
     width:100%; height:100%; object-fit:cover; object-position:top; display:block;
     filter:grayscale(100%);
   }
