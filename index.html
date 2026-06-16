@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dennis Morrison — Editor / Sound Designer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0d0d0f;
+    --text: #d4d4d0;
+    --muted: #525250;
+    --line: rgba(255,255,255,0.11);
+    --header-h: 56px;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Space Mono','Courier New',monospace;
+    font-size:0.72rem;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    scrollbar-width:none;
+  }
+  body::-webkit-scrollbar{ display:none; }
+  html{ scrollbar-width:none; }
+  html::-webkit-scrollbar{ display:none; }
+  a{ color:inherit; text-decoration:none; }
+  ::selection{ background:var(--text); color:var(--bg); }
+
+  /* ── HEADER ── */
+  header{
+    height:var(--header-h);
+    display:flex; align-items:center; justify-content:flex-end;
+    padding:0 14px;
+    background:transparent;
+    border-bottom:1px solid var(--line);
+  }
+  .site-name{
+    position:fixed; top:0; left:14px; z-index:200;
+    font-size:2.1rem; color:var(--text); line-height:var(--header-h);
+  }
+  .site-name .role{ color:var(--muted); }
+  .header-nav{ display:flex; gap:36px; align-items:center; }
+  .header-nav button, .header-nav a{
+    background:none; border:none; cursor:pointer; font-family:inherit;
+    font-size:0.72rem; color:var(--muted); transition:color .2s ease; padding:0;
+  }
+  .header-nav button:hover, .header-nav a:hover{ color:var(--text); }
+  .header-nav .ext::after{ content:" ↗"; }
+
+  /* ── MAIN GRID ── */
+  .grid-wrap{}
+  @keyframes fadeUp{
+    from{ opacity:0; transform:translateY(16px); }
+    to{   opacity:1; transform:translateY(0); }
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:16px;
+    padding:16px;
+  }
+  /* border-right + border-bottom only — no top, no left */
+  .grid-item{
+    display:flex; flex-direction:column;
+    border-right:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    cursor:pointer;
+    transition:transform .3s ease;
+    z-index:1;
+    opacity:0;
+    animation:fadeUp .5s ease forwards;
+  }
+  .grid-item:hover{
+    transform:scale(1.04);
+    z-index:2;
+  }
+  .grid-item:nth-child(3n){ border-right:none; }
+
+  .thumb{
+    aspect-ratio:1/1;
+    overflow:hidden; position:relative;
+    background:#111114;
+  }
+  .thumb video{ width:100%; height:100%; object-fit:cover; display:block; }
+  .thumb-overlay{
+    position:absolute; inset:0;
+    display:flex; align-items:flex-end; padding:16px;
+    background:linear-gradient(0deg,rgba(0,0,0,0.55) 0%,transparent 50%);
+    opacity:0; transition:opacity .25s ease;
+  }
+  .grid-item:hover .thumb-overlay{ opacity:1; }
+  .thumb-overlay span{
+    font-size:1rem; color:rgba(255,255,255,0.9); letter-spacing:0.06em;
+    transform:translateY(8px); opacity:0;
+    transition:transform .3s ease, opacity .3s ease;
+  }
+  .grid-item:hover .thumb-overlay span{
+    transform:translateY(0); opacity:1;
+  }
+
+  .caption{
+    padding:10px 12px 13px;
+    display:flex; flex-direction:column; gap:3px;
+  }
+  .caption-num{ font-size:0.58rem; color:var(--muted); letter-spacing:0.08em; }
+  .caption-title{ font-size:0.88rem; color:var(--text); }
+  .caption-meta{ font-size:0.65rem; color:var(--muted); margin-top:1px; }
+
+  /* ── PROJECT BACKDROP (dims grid above panel) ── */
+  #projectBackdrop{
+    position:fixed; inset:0; z-index:299;
+    background:rgba(5,5,7,0.72);
+    opacity:0; pointer-events:none;
+    transition:opacity .4s ease;
+  }
+  #projectBackdrop.is-open{
+    opacity:1; pointer-events:auto;
+  }
+
+  /* ── PROJECT DETAIL OVERLAY ── */
+  #projectOverlay{
+    --bg: #d4d4d0;
+    --text: #0d0d0f;
+    --muted: #7a7a76;
+    --line: rgba(0,0,0,0.12);
+    position:fixed; bottom:0; left:0; right:0;
+    height:78vh;
+    z-index:300;
+    background:var(--bg);
+    border-top:1px solid var(--line);
+    overflow:hidden;
+    display:flex; flex-direction:column;
+    transform:translateY(100%);
+    transition:transform .5s cubic-bezier(.22,.8,.25,1);
+    visibility:hidden;
+  }
+  #projectOverlay.is-open{
+    transform:translateY(0);
+    visibility:visible;
+  }
+
+  /* top bar inside overlay */
+  .po-bar{
+    flex-shrink:0;
+    background:var(--bg);
+    border-bottom:1px solid var(--line);
+    display:grid; grid-template-columns:1fr auto;
+    align-items:center;
+    padding:0 14px;
+    height:auto; min-height:var(--header-h);
+    padding-top:18px; padding-bottom:14px;
+  }
+  .po-title-large{
+    font-size:2.4rem; color:var(--text); line-height:1.1;
+    letter-spacing:-0.01em;
+  }
+  .po-bar-meta{
+    display:flex; align-items:center; gap:20px;
+  }
+  .po-bar-cell{
+    display:flex; align-items:center; padding:0;
+    font-size:0.94rem; color:var(--muted);
+  }
+  .po-close{
+    background:none; border:none; cursor:pointer; font-family:inherit;
+    font-size:0.94rem; color:var(--muted); transition:color .2s ease;
+  }
+  .po-close:hover{ color:var(--text); }
+
+  /* info columns */
+  .po-info{
+    flex:1; min-height:0;
+    display:grid; grid-template-columns:repeat(3,1fr);
+    overflow:hidden;
+  }
+  .po-col{
+    padding:14px 16px;
+    border-right:1px solid var(--line);
+    overflow:hidden;
+  }
+  .po-col:last-child{ border-right:none; }
+
+  .po-label{
+    font-size:0.78rem; color:var(--muted); letter-spacing:0.08em;
+    text-transform:uppercase; margin-bottom:3px;
+  }
+  .po-value{
+    font-size:0.91rem; color:var(--text); margin-bottom:10px; line-height:1.5;
+  }
+  .po-value.large{
+    font-size:0.98rem; line-height:1.65; color:#b0b0aa;
+  }
+
+  .po-divider{ flex-shrink:0; border:none; border-bottom:1px solid var(--line); }
+
+  .po-watch{
+    display:inline-flex; align-items:center; gap:8px;
+    margin-top:auto; padding:10px 16px;
+    font-size:0.88rem; color:var(--bg);
+    background:var(--text);
+    transition:opacity .2s ease;
+    letter-spacing:0.04em;
+  }
+  .po-watch:hover{ opacity:0.75; }
+  .po-watch::after{ content:"↗"; }
+
+  /* detail clips */
+  .po-clips{
+    flex-shrink:0;
+    display:grid; grid-template-columns:repeat(3,1fr);
+  }
+  .po-clip{
+    border-right:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+  }
+  .po-clip:nth-child(3n){ border-right:none; }
+  .po-clip-thumb{
+    aspect-ratio:16/9;
+    overflow:hidden; position:relative; background:rgba(0,0,0,0.15);
+  }
+  .po-clip-thumb video{ width:100%; height:100%; object-fit:cover; display:block; }
+  .po-clip-caption{
+    padding:5px 10px 7px;
+    display:flex; justify-content:space-between;
+  }
+  .po-clip-caption span:first-child{ font-size:0.85rem; color:var(--muted); }
+  .po-clip-caption span:last-child{ font-size:0.85rem; color:var(--muted); opacity:.5; }
+
+  /* ── BIO / CONTACT SIDE PANELS ── */
+  .overlay{
+    position:fixed; inset:0; z-index:400;
+    display:flex; justify-content:flex-end;
+    visibility:hidden;
+  }
+  .overlay-backdrop{
+    position:absolute; inset:0;
+    background:rgba(0,0,0,0);
+    transition:background .35s ease;
+  }
+  .overlay.is-open{ visibility:visible; }
+  .overlay.is-open .overlay-backdrop{ background:rgba(0,0,0,0.55); }
+  .panel{
+    position:relative; z-index:2;
+    width:min(400px,100%); height:100%;
+    background:#111113;
+    border-left:1px solid var(--line);
+    padding:40px 32px;
+    overflow-y:auto;
+    transform:translateX(100%);
+    transition:transform .4s cubic-bezier(.22,.8,.25,1);
+    display:flex; flex-direction:column;
+  }
+  .overlay.is-open .panel{ transform:translateX(0); }
+  .panel-close{
+    align-self:flex-end; margin-bottom:36px;
+    background:none; border:none; cursor:pointer; font-family:inherit;
+    font-size:0.68rem; color:var(--muted);
+  }
+  .panel-close:hover{ color:var(--text); }
+  .panel h2{ font-size:0.85rem; font-weight:700; margin-bottom:22px; color:var(--text); }
+  .panel p{ font-size:0.72rem; color:var(--muted); line-height:1.75; margin-bottom:16px; max-width:340px; }
+  .panel p strong{ color:var(--text); font-weight:400; }
+  .bio-portrait{
+    width:100%; aspect-ratio:3/2; margin-bottom:24px;
+    overflow:hidden;
+  }
+  .bio-portrait img{
+    width:100%; height:100%; object-fit:cover; display:block;
+    filter:grayscale(100%);
+  }
+  .stat-row{ display:flex; flex-direction:column; gap:10px; margin:20px 0 8px; }
+  .stat .lbl{ color:var(--text); font-size:0.72rem; border-bottom:1px solid var(--line); padding-bottom:10px; }
+  .contact-link{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:14px 0; border-bottom:1px solid var(--line);
+    font-size:0.72rem; color:var(--text); transition:color .2s ease;
+  }
+  .contact-link:hover{ color:var(--muted); }
+  .contact-link span{ color:var(--muted); font-size:0.65rem; text-transform:uppercase; letter-spacing:0.05em; }
+  form{ display:flex; flex-direction:column; gap:18px; margin-top:24px; }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field label{ font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; }
+  .field input,.field textarea{
+    background:transparent; border:none; border-bottom:1px solid var(--line);
+    padding:8px 0; color:var(--text); font-size:0.72rem; font-family:inherit;
+    transition:border-color .2s ease;
+  }
+  .field input:focus,.field textarea:focus{ outline:none; border-color:var(--text); }
+  .field textarea{ resize:vertical; min-height:70px; }
+  .submit-btn{
+    align-self:flex-start; margin-top:4px;
+    background:var(--text); color:var(--bg); border:none;
+    padding:9px 20px; font-size:0.68rem; cursor:pointer;
+    font-family:inherit; transition:opacity .2s ease;
+  }
+  .submit-btn:hover{ opacity:0.75; }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:860px){
+    .grid,.po-info,.po-clips{ grid-template-columns:repeat(2,1fr); }
+    .grid-item:nth-child(3n){ border-right:1px solid var(--line); }
+    .grid-item:nth-child(2n){ border-right:none; }
+    .po-col:nth-child(3){ border-top:1px solid var(--line); grid-column:span 2; border-right:none; }
+    .po-clip:nth-child(3n){ border-right:1px solid var(--line); }
+    .po-clip:nth-child(2n){ border-right:none; }
+  }
+  @media(max-width:540px){
+    .grid,.po-info,.po-clips{ grid-template-columns:1fr; }
+    .grid-item,.po-clip{ border-right:none; }
+    .panel{ width:100%; }
+
+    /* header: stack nav below the fixed name instead of fighting it for width */
+    header{
+      height:auto; min-height:78px;
+      align-items:flex-end;
+      padding:0 14px 12px;
+    }
+    .site-name{ font-size:1.2rem; }
+    .header-nav{ gap:16px; }
+    .header-nav button, .header-nav a{ font-size:0.64rem; }
+
+    /* project panel: stacked single-column info/clips no longer fit in 78vh
+       without scrolling, so let the panel scroll on mobile (desktop keeps
+       the no-scroll layout since its 3-column grid is short enough to fit) */
+    #projectOverlay{
+      height:92vh;
+      overflow-y:auto;
+      -webkit-overflow-scrolling:touch;
+    }
+    .po-bar{
+      position:sticky; top:0; z-index:2;
+      padding-top:14px; padding-bottom:10px;
+    }
+    .po-title-large{ font-size:1.5rem; }
+    .po-info{ flex:none; overflow:visible; }
+    .po-col{ overflow:visible; }
+  }
+</style>
+</head>
+<body>
+
+<div class="site-name">dennismorrison<span class="role">.editor</span></div>
+
+<header>
+  <nav class="header-nav">
+    <button id="openBio">Information</button>
+    <button id="openContact">Contact</button>
+    <a class="ext" href="https://www.instagram.com/dennismorrison88" target="_blank" rel="noopener">Instagram</a>
+  </nav>
+</header>
+
+<div class="grid-wrap">
+  <div class="grid">
+
+    <div class="grid-item"
+      data-num="#001"
+      data-title="ironwire"
+      data-type="Commercial"
+      data-year="2026"
+      data-role="Editor, Sound Design"
+      data-client="ironwire"
+      data-short="A short ad created for ironwire clothing brand. Cut in Davinci Resolve with VFX done in After Effects. Sound Design done in Pro Tools."
+      data-director="Spencer Myers"
+      data-producer=""
+      data-productionco=""
+      data-link="https://youtu.be/DCtzD0b_750"
+      data-clip1="videos/project-1-detail-a.mp4"
+      data-clip2="videos/project-1-detail-b.mp4"
+      data-clip3="videos/project-1-detail-c.mp4">
+      <div class="thumb">
+        <video autoplay muted loop playsinline><source src="videos/project-1-loop.mp4" type="video/mp4"></video>
+        <div class="thumb-overlay"><span>View project</span></div>
+      </div>
+      <div class="caption">
+        <span class="caption-num">001</span>
+        <span class="caption-title">ironwire</span>
+        <span class="caption-meta">Commercial — 2026</span>
+      </div>
+    </div>
+
+    <div class="grid-item"
+      data-num="#002"
+      data-title="Letters in Red"
+      data-type="Short Film"
+      data-year="2026"
+      data-role="Director, Editor, Sound Design"
+      data-client="908 Film Festival"
+      data-short="Written, shot, and edited in 48 hours by a team of four for the 908 Film Festival. Winner of Best Editing and Best Cinematography. Cut in Davinci Resolve with Sound Design in Pro Tools."
+      data-director="Spencer Myers"
+      data-producer=""
+      data-productionco=""
+      data-link="https://www.youtube.com/watch?v=y3ExNuHf7jw&amp;t=4s"
+      data-clip1="videos/project-2-detail-a.mp4"
+      data-clip2="videos/project-2-detail-b.mp4"
+      data-clip3="videos/project-2-detail-c.mp4">
+      <div class="thumb">
+        <video autoplay muted loop playsinline><source src="videos/project-2-loop.mp4" type="video/mp4"></video>
+        <div class="thumb-overlay"><span>View project</span></div>
+      </div>
+      <div class="caption">
+        <span class="caption-num">002</span>
+        <span class="caption-title">Letters in Red</span>
+        <span class="caption-meta">Short Film — 2026</span>
+      </div>
+    </div>
+
+    <div class="grid-item"
+      data-num="#003"
+      data-title="Sexy Walk to Me"
+      data-type="Music Video"
+      data-year="2026"
+      data-role="Editor"
+      data-client="Jamie Reed"
+      data-short="Music video for 'Sexy Walk To Me' release. Edited in Premiere Pro. Effects and Graphics in Davinci Resolve."
+      data-director="Xehara Pledge"
+      data-producer=""
+      data-productionco=""
+      data-link="https://www.youtube.com/watch?v=DtI-EV80yOQ"
+      data-clip1="videos/project-3-detail-a.mp4"
+      data-clip2="videos/project-3-detail-b.mp4"
+      data-clip3="videos/project-3-detail-c.mp4">
+      <div class="thumb">
+        <video autoplay muted loop playsinline><source src="videos/project-3-loop.mp4" type="video/mp4"></video>
+        <div class="thumb-overlay"><span>View project</span></div>
+      </div>
+      <div class="caption">
+        <span class="caption-num">003</span>
+        <span class="caption-title">Sexy Walk To Me</span>
+        <span class="caption-meta">Music Video — 2026</span>
+      </div>
+    </div>
+
+    <div class="grid-item"
+      data-num="#004"
+      data-title="Point One Series A Launch Campaign"
+      data-type="Commercial"
+      data-year="2026"
+      data-role="Editor"
+      data-client="Point One"
+      data-short="A series of brand advertisements for a New York tech startup. Cut in Davinci Resolve"
+      data-director="Spencer Myers"
+      data-producer=""
+      data-productionco=""
+      data-link="https://pointone.com/news/pointone-raises-16-million-series-a"
+      data-clip1="videos/project-4-detail-a.mp4"
+      data-clip2="videos/project-4-detail-b.mp4"
+      data-clip3="videos/project-4-detail-c.mp4">
+      <div class="thumb">
+        <video autoplay muted loop playsinline><source src="videos/project-4-loop.mp4" type="video/mp4"></video>
+        <div class="thumb-overlay"><span>View project</span></div>
+      </div>
+      <div class="caption">
+        <span class="caption-num">004</span>
+        <span class="caption-title">Point One Series A Launch Campaign</span>
+        <span class="caption-meta">Commercial — 2026</span>
+      </div>
+    </div>
+
+    <div class="grid-item"
+      data-num="#005"
+      data-title="Say Less"
+      data-type="Documentary "
+      data-year="2026"
+      data-role="Cinematographer, Editor"
+      data-client="Personal"
+      data-role="Editor, Sound Design"
+      data-client="Brand Name"
+      data-short="A short documentary about the relationship between two humans in New York. Edited in Premiere Pro "
+      data-director="Charles Murphy"
+      data-producer=""
+      data-productionco=""
+      data-link="tbd"
+      data-clip1="videos/project-5-detail-a.mp4"
+      data-clip2="videos/project-5-detail-b.mp4"
+      data-clip3="videos/project-5-detail-c.mp4">
+      <div class="thumb">
+        <video autoplay muted loop playsinline><source src="videos/project-5-loop.mp4" type="video/mp4"></video>
+        <div class="thumb-overlay"><span>View project</span></div>
+      </div>
+      <div class="caption">
+        <span class="caption-num">005</span>
+        <span class="caption-title">Say Less</span>
+        <span class="caption-meta">Documentary — 2026</span>
+      </div>
+    </div>
+
+    <div class="grid-item"
+      data-num="#006"
+      data-title="Skin Envi"
+      data-type="Commercial"
+      data-year="2026"
+      data-role="Editor, Sound Design"
+      data-client="Skin Envi"
+      data-short="Series of Short product advertisements for the skin care brand Skin Envi. Edited in Davinci Resolve. Sound Design in Davinci Resolve."
+      data-director="Spencer Myers"
+      data-producer=""
+      data-productionco=""
+      data-link="tbd"
+      data-clip1="videos/project-6-detail-a.mp4"
+      data-clip2="videos/project-6-detail-b.mp4"
+      data-clip3="videos/project-6-detail-c.mp4">
+      <div class="thumb">
+        <video autoplay muted loop playsinline><source src="videos/project-6-loop.mp4" type="video/mp4"></video>
+        <div class="thumb-overlay"><span>View project</span></div>
+      </div>
+      <div class="caption">
+        <span class="caption-num">006</span>
+        <span class="caption-title">Skin Envi</span>
+        <span class="caption-meta">Commercial - 2026</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="projectBackdrop"></div>
+
+<!-- ── PROJECT DETAIL OVERLAY ── -->
+<div id="projectOverlay">
+  <div class="po-bar">
+    <div class="po-title-large" id="poTitleBar"></div>
+    <div class="po-bar-meta">
+      <div class="po-bar-cell" id="poNum"></div>
+      <button class="po-close" id="closeProject">Close ✕</button>
+    </div>
+  </div>
+
+  <div class="po-info">
+    <div class="po-col">
+      <div class="po-label">Type</div>
+      <div class="po-value" id="poType"></div>
+      <div class="po-label">Year</div>
+      <div class="po-value" id="poYear"></div>
+      <div class="po-label">Role</div>
+      <div class="po-value" id="poRole"></div>
+      <div class="po-label">Client / For</div>
+      <div class="po-value" id="poClient"></div>
+    </div>
+    <div class="po-col">
+      <div class="po-label">About</div>
+      <div class="po-value" id="poShort"></div>
+    </div>
+    <div class="po-col">
+      <div class="po-label">Director</div>
+      <div class="po-value" id="poDirector"></div>
+      <a class="po-watch" id="poLink" target="_blank" rel="noopener">Watch full project</a>
+    </div>
+  </div>
+
+  <hr class="po-divider">
+
+  <div class="po-clips">
+    <div class="po-clip">
+      <div class="po-clip-thumb">
+        <video id="poClip1" autoplay muted loop playsinline></video>
+      </div>
+      <div class="po-clip-caption">
+        <span>Clip 01</span><span id="poClipLabel1"></span>
+      </div>
+    </div>
+    <div class="po-clip">
+      <div class="po-clip-thumb">
+        <video id="poClip2" autoplay muted loop playsinline></video>
+      </div>
+      <div class="po-clip-caption">
+        <span>Clip 02</span><span id="poClipLabel2"></span>
+      </div>
+    </div>
+    <div class="po-clip">
+      <div class="po-clip-thumb">
+        <video id="poClip3" autoplay muted loop playsinline></video>
+      </div>
+      <div class="po-clip-caption">
+        <span>Clip 03</span><span id="poClipLabel3"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── BIO PANEL ── -->
+<div class="overlay" id="bioOverlay">
+  <div class="overlay-backdrop" data-close></div>
+  <div class="panel">
+    <button class="panel-close" data-close>Close ✕</button>
+    <div class="bio-portrait"><img src="dennis-portrait.jpg" alt="Dennis Morrison"></div>
+    <h2>Dennis Morrison</h2>
+    <p>Dennis Morrison is an editor and filmmaker based in New York, currently studying film at NYU. He's been cutting since high school and has been doing it seriously ever since.</p>
+    <p>He works with directors and creatives to shape their vision — cutting only when the story calls for it.</p>
+    <div class="stat-row">
+      <div class="stat"><div class="lbl">Premiere Pro</div></div>
+      <div class="stat"><div class="lbl">DaVinci Resolve</div></div>
+      <div class="stat"><div class="lbl">Avid Media Composer</div></div>
+      <div class="stat"><div class="lbl">Pro Tools</div></div>
+      <div class="stat"><div class="lbl">After Effects</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONTACT PANEL ── -->
+<div class="overlay" id="contactOverlay">
+  <div class="overlay-backdrop" data-close></div>
+  <div class="panel">
+    <button class="panel-close" data-close>Close ✕</button>
+    <h2>Contact</h2>
+    <p>Have a project in mind? Reach out directly or send a note below.</p>
+    <a class="contact-link" href="mailto:morrisondennis46@gmail.com">morrisondennis46@gmail.com <span>Email</span></a>
+    <a class="contact-link" href="https://www.instagram.com/dennismorrison88" target="_blank" rel="noopener">@dennismorrison88 <span>Instagram</span></a>
+    <form onsubmit="event.preventDefault(); alert('Connect to Formspree to receive messages.');">
+      <div class="field"><label for="cn">Name</label><input id="cn" type="text" required></div>
+      <div class="field"><label for="ce">Email</label><input id="ce" type="email" required></div>
+      <div class="field"><label for="cm">Message</label><textarea id="cm" required></textarea></div>
+      <button type="submit" class="submit-btn">Send</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  // ── Stagger grid items on load ──
+  document.querySelectorAll('.grid-item').forEach((item, i) => {
+    item.style.animationDelay = `${i * 0.07}s`;
+  });
+
+  // ── Project detail overlay ──
+  const overlay  = document.getElementById('projectOverlay');
+  const backdrop = document.getElementById('projectBackdrop');
+
+  function openProject(){
+    overlay.classList.add('is-open');
+    backdrop.classList.add('is-open');
+  }
+  function closeProject(){
+    overlay.classList.remove('is-open');
+    backdrop.classList.remove('is-open');
+  }
+
+  // strips any extension so .mp4, .mov, .webm all work
+  function loadVideo(videoEl, path){
+    const base = path.replace(/\.[^/.]+$/, '');
+    videoEl.innerHTML =
+      `<source src="${base}.mp4"  type="video/mp4">` +
+      `<source src="${base}.mov"  type="video/quicktime">` +
+      `<source src="${base}.webm" type="video/webm">`;
+    videoEl.load();
+  }
+
+  // apply to all static grid videos on page load
+  document.querySelectorAll('.thumb video, .po-clip-thumb video').forEach(v => {
+    const src = v.querySelector('source');
+    if(src) loadVideo(v, src.getAttribute('src'));
+  });
+
+  function setVideoSrc(videoEl, src){ loadVideo(videoEl, src); }
+
+  document.querySelectorAll('.grid-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const d = item.dataset;
+      document.getElementById('poNum').textContent        = d.num;
+      document.getElementById('poTitleBar').textContent   = d.title;
+      document.getElementById('poType').textContent       = d.type;
+      document.getElementById('poYear').textContent       = d.year;
+      document.getElementById('poRole').textContent       = d.role;
+      document.getElementById('poClient').textContent     = d.client;
+      document.getElementById('poShort').textContent        = d.short;
+      document.getElementById('poDirector').textContent     = d.director || '—';
+      const linkEl = document.getElementById('poLink');
+      if(d.link === 'tbd'){
+        linkEl.removeAttribute('href');
+        linkEl.textContent = 'Coming Soon';
+        linkEl.style.opacity = '0.45';
+        linkEl.style.cursor = 'default';
+        linkEl.style.pointerEvents = 'none';
+      } else {
+        linkEl.href = d.link;
+        linkEl.textContent = 'Watch full project';
+        linkEl.style.opacity = '';
+        linkEl.style.cursor = '';
+        linkEl.style.pointerEvents = '';
+      }
+      document.getElementById('poClipLabel1').textContent = d.type;
+      document.getElementById('poClipLabel2').textContent = d.year;
+      document.getElementById('poClipLabel3').textContent = d.role.split(',')[0];
+      setVideoSrc(document.getElementById('poClip1'), d.clip1);
+      setVideoSrc(document.getElementById('poClip2'), d.clip2);
+      setVideoSrc(document.getElementById('poClip3'), d.clip3);
+      openProject();
+    });
+  });
+
+  document.getElementById('closeProject').addEventListener('click', closeProject);
+  backdrop.addEventListener('click', closeProject);
+
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape'){
+      closeProject();
+      document.querySelectorAll('.overlay.is-open').forEach(o => o.classList.remove('is-open'));
+    }
+  });
+
+  // ── Bio / Contact side panels ──
+  function setupPanel(btnId, overlayId){
+    const ov = document.getElementById(overlayId);
+    document.getElementById(btnId).addEventListener('click', () => {
+      ov.classList.add('is-open');
+    });
+    ov.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', () => {
+      ov.classList.remove('is-open');
+    }));
+  }
+  setupPanel('openBio','bioOverlay');
+  setupPanel('openContact','contactOverlay');
+</script>
+
+</body>
+</html>
