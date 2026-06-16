@@ -176,13 +176,14 @@
   /* info columns */
   .po-info{
     flex:1; min-height:0;
-    display:grid; grid-template-columns:repeat(3,1fr);
+    display:grid; grid-template-columns:repeat(2,1fr);
     overflow:hidden;
   }
   .po-col{
     padding:14px 16px;
     border-right:1px solid var(--line);
     overflow:hidden;
+    display:flex; flex-direction:column;
   }
   .po-col:last-child{ border-right:none; }
 
@@ -303,10 +304,9 @@
 
   /* ── RESPONSIVE ── */
   @media(max-width:860px){
-    .grid,.po-info,.po-clips{ grid-template-columns:repeat(2,1fr); }
+    .grid,.po-clips{ grid-template-columns:repeat(2,1fr); }
     .grid-item:nth-child(3n){ border-right:1px solid var(--line); }
     .grid-item:nth-child(2n){ border-right:none; }
-    .po-col:nth-child(3){ border-top:1px solid var(--line); grid-column:span 2; border-right:none; }
     .po-clip:nth-child(3n){ border-right:1px solid var(--line); }
     .po-clip:nth-child(2n){ border-right:none; }
   }
@@ -545,8 +545,6 @@
     <div class="po-col">
       <div class="po-label">About</div>
       <div class="po-value" id="poShort"></div>
-    </div>
-    <div class="po-col">
       <div class="po-label">Director</div>
       <div class="po-value" id="poDirector"></div>
       <a class="po-watch" id="poLink" target="_blank" rel="noopener">Watch full project</a>
