@@ -272,7 +272,7 @@
     overflow:hidden;
   }
   .bio-portrait img{
-    width:100%; height:100%; object-fit:cover; display:block;
+    width:100%; height:100%; object-fit:cover; object-position:top; display:block;
     filter:grayscale(100%);
   }
   .stat-row{ display:flex; flex-direction:column; gap:10px; margin:20px 0 8px; }
@@ -645,6 +645,8 @@
       `<source src="${base}.mov"  type="video/quicktime">` +
       `<source src="${base}.webm" type="video/webm">`;
     videoEl.load();
+    const playPromise = videoEl.play();
+    if(playPromise && playPromise.catch) playPromise.catch(()=>{});
   }
 
   // apply to all static grid videos on page load
