@@ -176,7 +176,7 @@
   /* info columns */
   .po-info{
     flex:1; min-height:0;
-    display:grid; grid-template-columns:repeat(2,1fr);
+    display:grid; grid-template-columns:repeat(3,1fr);
     overflow:hidden;
   }
   .po-col{
@@ -191,7 +191,6 @@
     font-size:0.78rem; color:var(--muted); letter-spacing:0.08em;
     text-transform:uppercase; margin-bottom:3px;
   }
-  .po-label-spaced{ margin-top:22px; }
   .po-value{
     font-size:0.91rem; color:var(--text); margin-bottom:10px; line-height:1.5;
   }
@@ -311,6 +310,13 @@
     .grid-item:nth-child(2n){ border-right:none; }
     .po-clip:nth-child(3n){ border-right:1px solid var(--line); }
     .po-clip:nth-child(2n){ border-right:none; }
+
+    .po-info{ grid-template-columns:repeat(2,1fr); }
+    .po-col:nth-child(3){
+      grid-column:span 2;
+      border-right:none;
+      border-top:1px solid var(--line);
+    }
   }
   @media(max-width:540px){
     .grid,.po-info,.po-clips{ grid-template-columns:1fr; }
@@ -342,6 +348,7 @@
     .po-title-large{ font-size:1.5rem; }
     .po-info{ flex:none; overflow:visible; }
     .po-col{ overflow:visible; }
+    .po-col:nth-child(3){ border-top:none; }
   }
 </style>
 </head>
@@ -547,7 +554,9 @@
     <div class="po-col">
       <div class="po-label">About</div>
       <div class="po-value" id="poShort"></div>
-      <div class="po-label po-label-spaced">Director</div>
+    </div>
+    <div class="po-col">
+      <div class="po-label">Director</div>
       <div class="po-value" id="poDirector"></div>
       <a class="po-watch" id="poLink" target="_blank" rel="noopener">Watch full project</a>
     </div>
